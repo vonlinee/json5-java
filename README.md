@@ -169,3 +169,40 @@ https://github.com/Synt4xErr0r4/json5
 
 
 
+使用maven-javadoc-plugin生成中文文档时，IDEA控制台中文乱码，File | Settings | Build, Execution, Deployment | Build Tools | Maven | Runner在VM Options中添加-Dfile.encoding=GBK，，切记一定是GBK。即使用UTF-8的话，依然是乱码，这是因为Maven的默认平台编码是GBK，如果你在命令行中输入mvn -version的话，会得到如下信息，根据Default locale可以看出
+
+```shell
+➜ mvn -version
+Apache Maven 3.8.1 (05c21c65bdfed0f71a2f2ada8b84da59348c4c5d)
+Maven home: D:\Develop\Tools\apache-maven-3.8.1\bin\..
+Java version: 11.0.15.1, vendor: Oracle Corporation, runtime: D:\Develop\JDK\jdk-11.0.15.1
+Default locale: zh_CN, platform encoding: GBK
+OS name: "windows 10", version: "10.0", arch: "amd64", family: "windows"
+```
+
+
+
+
+
+打包命令
+
+maven install
+
+maven package
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
