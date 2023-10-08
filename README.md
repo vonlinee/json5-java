@@ -82,17 +82,6 @@ try(OutputStream stream = ...) {
 
 
 
-```java
-Json5 json5 = Json5.builder(builder ->
-        builder.allowInvalidSurrogate()
-                .quoteSingle()
-                .indentFactor(2)
-                .build()
-                .remainComment(true)); // 保留注释
-```
-
-
-
 ## Documentation
 
 Detailed javadoc documentation can be found at [javadoc.io](https://javadoc.io/doc/de.marhali/json5-java).
@@ -110,3 +99,73 @@ For a detailed explanation see the [Json5Options](src/main/java/de/marhali/json5
 This library is released under the [Apache 2.0 license](LICENSE).
 
 Partial parts of the project are based on [GSON](https://github.com/google/gson) and [Synt4xErr0r4 / json5](https://github.com/Synt4xErr0r4/json5). The affected classes contain the respective license notice. 
+
+
+
+1.添加记录 Json5Object节点的单行注释功能，可以读取某个KV对的注释信息，注释与key名称进行关联
+
+```java
+Json5 json5 = Json5.builder(builder ->
+        builder.allowInvalidSurrogate()
+                .quoteSingle()
+                .indentFactor(2)
+                .build()
+                .remainComment(true)); // 保留注释
+```
+
+测试json5文本如下：这里逗号后的注释视为是处在该行的键值对的注释
+
+```json5
+{
+  "Code": 200,
+  "Msg": "成功",
+  "Data": [
+    {
+      name: "zs",
+      "failTRate": 0.1875,    //  this is single-line comment
+      "roomTNum": 64,    //  this is single-line comment
+      "useTRate": 1.968823,    //  this is single-line comment
+      "schoolId": "S-3333",    //  this is single-line comment
+      "roomUseCount": 3    //  this is single-line comment
+    }
+  ]
+}
+```
+
+测试代码
+
+```java
+try (InputStream stream = getTestResource("test.comment.json5")) {
+    Json5Element element = json5.parse(stream);
+    if (element.isJson5Object()) {
+        Json5Object asJson5Object = element.getAsJson5Object();
+        Json5Array array = asJson5Object.getAsJson5Array("Data");
+        Json5Object object = array.getAsJson5Object(0);
+        for (String key : object.keySet()) {
+            System.out.println(key);
+            System.out.println(object.getComment(key)); // 获取指定key的注释信息
+        }
+    }
+} catch (IOException e) {
+    throw new RuntimeException(e);
+}
+```
+
+
+
+```plain
+Jankson - 解析json5和HJSON
+https://github.com/falkreon/Jankson
+
+json5.java - 解析json5 (已废弃)
+https://github.com/brimworks/json5.java
+
+json5-java
+https://github.com/marhali/json5-java
+
+另一个json5库
+https://github.com/Synt4xErr0r4/json5
+```
+
+
+

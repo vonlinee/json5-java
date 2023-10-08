@@ -43,14 +43,10 @@ public class TestJson5Comment {
     void parseComment() {
         try (InputStream stream = getTestResource("test.comment.json5")) {
             Json5Element element = json5.parse(stream);
-
             if (element.isJson5Object()) {
                 Json5Object asJson5Object = element.getAsJson5Object();
-
                 Json5Array array = asJson5Object.getAsJson5Array("Data");
-
                 Json5Object object = array.getAsJson5Object(0);
-
                 for (String key : object.keySet()) {
                     System.out.println(key);
                     System.out.println(object.getComment(key));
