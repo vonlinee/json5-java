@@ -80,7 +80,21 @@ try(OutputStream stream = ...) {
 }
 ```
 
+
+
+```java
+Json5 json5 = Json5.builder(builder ->
+        builder.allowInvalidSurrogate()
+                .quoteSingle()
+                .indentFactor(2)
+                .build()
+                .remainComment(true)); // 保留注释
+```
+
+
+
 ## Documentation
+
 Detailed javadoc documentation can be found at [javadoc.io](https://javadoc.io/doc/de.marhali/json5-java).
 
 ### Parsing & Serialization Options

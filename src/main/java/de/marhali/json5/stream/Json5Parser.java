@@ -40,34 +40,37 @@ import java.util.Objects;
  */
 public final class Json5Parser {
 
-    private Json5Parser() {}
+    private Json5Parser() {
+    }
 
     /**
      * Parses the specified {@link Json5Lexer lexer} into a parse tree of {@link Json5Element}'s.
      * Thereby it does not matter if the provided root element is an array or object.
+     *
      * @param lexer Tokenized json5 data
      * @return a parse tree of {@link Json5Element}'s corresponding to the specified JSON5 or {@code null} if lexer does not provide any data
      */
     public static Json5Element parse(Json5Lexer lexer) {
         Objects.requireNonNull(lexer);
 
-        switch (lexer.nextClean()) {
-            case '{':
+        return switch (lexer.nextClean()) {
+            case '{' -> {
                 lexer.back();
-                return parseObject(lexer);
-            case '[':
+                yield parseObject(lexer);
+            }
+            case '[' -> {
                 lexer.back();
-                return parseArray(lexer);
-            case 0:
-                return null;
-            default:
-                throw lexer.syntaxError("Unknown or unexpected control character");
-        }
+                yield parseArray(lexer);
+            }
+            case 0 -> null;
+            default -> throw lexer.syntaxError("Unknown or unexpected control character");
+        };
     }
 
     /**
      * Parses the specified {@link Json5Lexer lexer} into a parse tree of an {@link Json5Object}.
      * If the provided data does not correspond to a json object a {@link Json5Exception} will be thrown.
+     *
      * @param lexer Tokenized json5 data.
      * @return a parse tree of {@link Json5Object} corresponding to the specified JSON5.
      * @see #parse(Json5Lexer)
@@ -75,16 +78,22 @@ public final class Json5Parser {
     public static Json5Object parseObject(Json5Lexer lexer) {
         Objects.requireNonNull(lexer);
 
-        if(lexer.nextClean() != '{') {
+        if (lexer.nextClean() != '{') {
             throw lexer.syntaxError("A json object must begin with '{'");
         }
 
         Json5Object object = new Json5Object();
 
         char control;
-        String key;
+        String key = null;
+
+        // point to the previous member, to fill the comment
+        String previousKey;
 
         while (true) {
+
+            previousKey = key;
+
             control = lexer.nextClean();
             switch (control) {
                 case 0:
@@ -96,22 +105,29 @@ public final class Json5Parser {
                     key = lexer.nextMemberName();
             }
 
-            if(object.has(key)) {
+            if (object.has(key)) {
                 throw new Json5Exception("Duplicate key " + key);
             }
 
-            if(lexer.nextClean() != ':') {
+            // 注释信息
+            consumeComment(object, lexer, previousKey);
+
+            if (lexer.nextClean() != ':') {
                 throw lexer.syntaxError("Expected ':' after a key, got '" + control + "' instead");
             }
 
-            object.add(key, lexer.nextValue());
+            Json5Element nextValue = lexer.nextValue();
+            object.add(key, nextValue);
+
             control = lexer.nextClean();
 
-            if(control == '}') {
+            if (control == '}') {
+
+                consumeComment(object, lexer, key);
                 return object;
             }
 
-            if(control != ',') {
+            if (control != ',') {
                 throw lexer.syntaxError("Expected ',' or '}' after value, got '" + control + "' instead");
             }
         }
@@ -120,6 +136,7 @@ public final class Json5Parser {
     /**
      * Parses the specified {@link Json5Lexer lexer} into a parse tree of an {@link Json5Array}.
      * If the provided data does not correspond to a json array a {@link Json5Exception} will be thrown.
+     *
      * @param lexer Tokenized json5 data.
      * @return a parse tree of {@link Json5Array} corresponding to the specified JSON5.
      * @see #parse(Json5Lexer)
@@ -127,14 +144,14 @@ public final class Json5Parser {
     public static Json5Array parseArray(Json5Lexer lexer) {
         Objects.requireNonNull(lexer);
 
-        if(lexer.nextClean() != '[') {
+        if (lexer.nextClean() != '[') {
             throw lexer.syntaxError("A json array must begin with '['");
         }
 
         Json5Array array = new Json5Array();
         char control;
 
-        while(true) {
+        while (true) {
             control = lexer.nextClean();
             switch (control) {
                 case 0:
@@ -148,13 +165,20 @@ public final class Json5Parser {
             array.add(lexer.nextValue());
             control = lexer.nextClean();
 
-            if(control == ']') {
+            if (control == ']') {
                 return array;
             }
 
-            if(control != ',') {
+            if (control != ',') {
                 throw lexer.syntaxError("Expected ',' or ']' after value, got '" + control + "' instead");
             }
         }
+    }
+
+    private static void consumeComment(Json5Object object, Json5Lexer lexer, String key) {
+        if (lexer.hasComments()) {
+            object.addComment(key, lexer.getCurrentCommmentAsString());
+        }
+        lexer.emptyComment();
     }
 }

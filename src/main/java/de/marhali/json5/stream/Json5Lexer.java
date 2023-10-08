@@ -101,12 +101,17 @@ public class Json5Lexer {
     /**
      * Constructs a new lexer from a specific {@link Reader}.
      * <p><b>Note:</b> The reader must be closed after operation ({@link Reader#close()})!</p>
+     *
      * @param reader  a reader.
      * @param options the options for lexing.
      */
     public Json5Lexer(Reader reader, Json5Options options) {
         this.reader = Objects.requireNonNull(reader).markSupported() ? reader : new BufferedReader(reader);
         this.options = Objects.requireNonNull(options);
+
+        if (options.isCommentRemained()) {
+            this.commentCache = new CommentCache();
+        }
 
         eof = false;
         back = false;
@@ -122,7 +127,6 @@ public class Json5Lexer {
     private boolean more() {
         if (back || eof)
             return back && !eof;
-
         return peek() > 0;
     }
 
@@ -138,17 +142,13 @@ public class Json5Lexer {
             return 0;
 
         int c;
-
         try {
             reader.mark(1);
-
             c = reader.read();
-
             reader.reset();
         } catch (Exception e) {
             throw syntaxError("Could not peek from source", e);
         }
-
         return c == -1 ? 0 : (char) c;
     }
 
@@ -180,44 +180,28 @@ public class Json5Lexer {
             line++;
             character = 0;
         } else character++;
-
         return current;
     }
 
     // https://262.ecma-international.org/5.1/#sec-7.3
     private boolean isLineTerminator(char c) {
-        switch (c) {
-            case '\n':
-            case '\r':
-            case 0x2028:
-            case 0x2029:
-                return true;
-            default:
-                return false;
-        }
+        return switch (c) {
+            case '\n', '\r', 0x2028, 0x2029 -> true;
+            default -> false;
+        };
     }
 
     // https://spec.json5.org/#white-space
     private boolean isWhitespace(char c) {
-        switch (c) {
-            case '\t':
-            case '\n':
-            case 0x0B: // Vertical Tab
-            case '\f':
-            case '\r':
-            case ' ':
-            case 0xA0: // No-break space
-            case 0x2028: // Line separator
-            case 0x2029: // Paragraph separator
-            case 0xFEFF: // Byte Order Mark
-                return true;
-            default:
-                // Unicode category "Zs" (space separators)
-                if (Character.getType(c) == Character.SPACE_SEPARATOR)
-                    return true;
-
-                return false;
-        }
+        return switch (c) {
+            // 0x0B : Vertical Tab
+            // 0xA0 : No-break space
+            // 0x2028 : Line separator
+            // 0x2029 : Paragraph separator
+            // 0xFEFF : Byte Order Mark
+            case '\t', '\n', 0x0B, '\f', '\r', ' ', 0xA0, 0x2028, 0x2029, 0xFEFF -> true;
+            default -> Character.getType(c) == Character.SPACE_SEPARATOR; // Unicode category "Zs" (space separators)
+        };
     }
 
     // https://262.ecma-international.org/5.1/#sec-9.3.1
@@ -225,6 +209,9 @@ public class Json5Lexer {
         return c >= '0' && c <= '9';
     }
 
+    /**
+     * 跳过多行注释文本
+     */
     private void nextMultiLineComment() {
         while (true) {
             char n = next();
@@ -236,12 +223,40 @@ public class Json5Lexer {
         }
     }
 
+    /**
+     * 可能为null
+     *
+     * @see Json5Options#isCommentRemained()
+     */
+    private CommentCache commentCache;
+
+    public void emptyComment() {
+        if (options.isCommentRemained() && commentCache != null) {
+            commentCache.clear();
+        }
+    }
+
+    public boolean hasComments() {
+        return commentCache != null && !commentCache.isEmpty();
+    }
+
+    public String getCurrentCommmentAsString() {
+        return commentCache.getText();
+    }
+
+    /**
+     * 跳过单行注释文本
+     */
     private void nextSingleLineComment() {
         while (true) {
             char n = next();
-
-            if (isLineTerminator(n) || n == 0)
+            if (isLineTerminator(n) || n == 0) {
                 return;
+            }
+            // 保存当前单个单行注释块
+            if (options.isCommentRemained() && commentCache != null) {
+                commentCache.append(n);
+            }
         }
     }
 
@@ -254,7 +269,7 @@ public class Json5Lexer {
     public char nextClean() {
         while (true) {
             if (!more()) {
-                if(index == -1) { // Empty stream
+                if (index == -1) { // Empty stream
                     return 0;
                 }
                 throw syntaxError("Unexpected end of data");
@@ -313,12 +328,13 @@ public class Json5Lexer {
     private char unicodeEscape(boolean member, boolean part) {
         String where = member ? "key" : "string";
 
-        String value = "";
+        StringBuilder value = new StringBuilder();
+
         int codepoint = 0;
 
         for (int i = 0; i < 4; ++i) {
             char n = next();
-            value += n;
+            value.append(n);
 
             int hex = dehex(n);
 
@@ -342,17 +358,15 @@ public class Json5Lexer {
             return;
 
         if (!Character.isSurrogatePair(hi, lo))
-            throw syntaxError(String.format(
-                    "Invalid surrogate pair: U+%04X and U+%04X",
-                    hi, lo
-            ));
+            // %04X 表示以小写的十六进制数输出；4表示输出的十六进制数的宽度是4个字符；0表示输出的十六进制数中，不足4个字符的部分，用'0'来补度充，以达到4个字符的宽度。
+            throw syntaxError(String.format("Invalid surrogate pair: U+%04X and U+%04X", hi, lo));
     }
 
     // https://spec.json5.org/#prod-JSON5String
     private String nextString(char quote) {
         StringBuilder result = new StringBuilder();
 
-        String value;
+        StringBuilder value;
         int codepoint;
 
         char n = 0;
@@ -415,12 +429,12 @@ public class Json5Lexer {
                         continue;
 
                     case 'x': // Hex escape sequence
-                        value = "";
+                        value = new StringBuilder();
                         codepoint = 0;
 
                         for (int i = 0; i < 2; ++i) {
                             n = next();
-                            value += n;
+                            value.append(n);
 
                             int hex = dehex(n);
 
@@ -484,7 +498,7 @@ public class Json5Lexer {
      * Reads a member name from the source according to the
      * <a href="https://spec.json5.org/#prod-JSON5MemberName">JSON5 Specification</a>
      *
-     * @return an member name
+     * @return a member name
      */
     public String nextMemberName() {
         StringBuilder result = new StringBuilder();
@@ -502,7 +516,7 @@ public class Json5Lexer {
             if (!more())
                 throw syntaxError("Unexpected end of data");
 
-            boolean part = result.length() > 0;
+            boolean part = !result.isEmpty();
 
             prev = n;
             n = next();
@@ -524,7 +538,7 @@ public class Json5Lexer {
             result.append(n);
         }
 
-        if (result.length() == 0)
+        if (result.isEmpty())
             throw syntaxError("Empty key");
 
         return result.toString();
@@ -534,7 +548,7 @@ public class Json5Lexer {
      * Reads a value from the source according to the
      * <a href="https://spec.json5.org/#prod-JSON5Value">JSON5 Specification</a>
      *
-     * @return an member name
+     * @return a member name
      */
     public Json5Element nextValue() {
         char n = nextClean();
@@ -576,31 +590,26 @@ public class Json5Lexer {
             int factor;
             double d = 0;
 
-            switch (string.charAt(0)) { // +, -, or 0
-                case '+':
+            factor = switch (string.charAt(0)) { // +, -, or 0
+                case '+' -> {
                     special = string.substring(1); // +
-                    factor = 1;
-                    break;
-
-                case '-':
+                    yield 1;
+                }
+                case '-' -> {
                     special = string.substring(1); // -
-                    factor = -1;
-                    break;
-
-                default:
+                    yield -1;
+                }
+                default -> {
                     special = string;
-                    factor = 1;
-                    break;
-            }
+                    yield 1;
+                }
+            };
 
-            switch (special) {
-                case "NaN":
-                    d = Double.NaN;
-                    break;
-                case "Infinity":
-                    d = Double.POSITIVE_INFINITY;
-                    break;
-            }
+            d = switch (special) {
+                case "NaN" -> Double.NaN;
+                case "Infinity" -> Double.POSITIVE_INFINITY;
+                default -> d;
+            };
 
             return new Json5Number(factor * d);
         }

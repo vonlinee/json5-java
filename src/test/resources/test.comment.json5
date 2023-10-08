@@ -1,0 +1,14 @@
+{
+  "Code": 200,
+  "Msg": "成功",
+  "Data": [
+    {
+      name: "zs",
+      "failTRate": 0.1875,    //  this is single-line comment
+      "roomTNum": 64,    //  this is single-line comment
+      "useTRate": 1.968823,    //  this is single-line comment
+      "schoolId": "S-3333",    //  this is single-line comment
+      "roomUseCount": 3    //  this is single-line comment
+    }
+  ]
+}

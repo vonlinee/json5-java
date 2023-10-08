@@ -19,6 +19,7 @@ package de.marhali.json5;
 
 import de.marhali.json5.internal.LinkedTreeMap;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,8 +32,39 @@ import java.util.Set;
  * @author Joel Leitch
  */
 public final class Json5Object extends Json5Element {
+
+    /**
+     * 存储每个键的注释文本
+     */
+    private Map<String, Json5Comment> commentMap;
+
+    /**
+     * 添加注释
+     *
+     * @param memberName key名称
+     * @param text       注释文本
+     */
+    public void addComment(String memberName, String text) {
+        if (members.containsKey(memberName)) {
+            if (commentMap == null) {
+                commentMap = new HashMap<>();
+            }
+            commentMap.put(memberName, new Json5Comment(text));
+        }
+    }
+
+    public Json5Comment getComment(String member) {
+        if (commentMap == null || commentMap.isEmpty()) {
+            return null;
+        }
+        return commentMap.get(member);
+    }
+
+    /**
+     * 存储键值对
+     */
     private final LinkedTreeMap<String, Json5Element> members =
-            new LinkedTreeMap<String, Json5Element>();
+            new LinkedTreeMap<>();
 
     /**
      * Creates a deep copy of this element and all its children
@@ -52,7 +84,7 @@ public final class Json5Object extends Json5Element {
      * rooted at this node.
      *
      * @param property name of the member.
-     * @param value the member object.
+     * @param value    the member object.
      */
     public void add(String property, Json5Element value) {
         members.put(property, value == null ? Json5Null.INSTANCE : value);
@@ -73,7 +105,7 @@ public final class Json5Object extends Json5Element {
      * Json5Primitive of String.
      *
      * @param property name of the member.
-     * @param value the string value associated with the member.
+     * @param value    the string value associated with the member.
      */
     public void addProperty(String property, String value) {
         add(property, value == null ? Json5Null.INSTANCE : new Json5String(value));
@@ -84,7 +116,7 @@ public final class Json5Object extends Json5Element {
      * Json5Primitive of Number.
      *
      * @param property name of the member.
-     * @param value the number value associated with the member.
+     * @param value    the number value associated with the member.
      */
     public void addProperty(String property, Number value) {
         add(property, value == null ? Json5Null.INSTANCE : new Json5Number(value));
@@ -95,7 +127,7 @@ public final class Json5Object extends Json5Element {
      * Json5Primitive of Boolean.
      *
      * @param property name of the member.
-     * @param value the number value associated with the member.
+     * @param value    the number value associated with the member.
      */
     public void addProperty(String property, Boolean value) {
         add(property, value == null ? Json5Null.INSTANCE : new Json5Boolean(value));
@@ -106,7 +138,7 @@ public final class Json5Object extends Json5Element {
      * Json5Primitive of Character.
      *
      * @param property name of the member.
-     * @param value the number value associated with the member.
+     * @param value    the number value associated with the member.
      */
     public void addProperty(String property, Character value) {
         add(property, value == null ? Json5Null.INSTANCE : new Json5String(value.toString()));

@@ -78,7 +78,7 @@ public abstract class Json5Element {
 
     /**
      * convenience method to get this element as a {@link Json5Object}. If the element is of some
-     * other type, a {@link IllegalStateException} will result. Hence it is best to use this method
+     * other type, a {@link IllegalStateException} will result. Hence, it is best to use this method
      * after ensuring that this element is of the desired type by calling {@link #isJson5Object()}
      * first.
      *
@@ -94,7 +94,7 @@ public abstract class Json5Element {
 
     /**
      * convenience method to get this element as a {@link Json5Array}. If the element is of some
-     * other type, a {@link IllegalStateException} will result. Hence it is best to use this method
+     * other type, a {@link IllegalStateException} will result. Hence, it is best to use this method
      * after ensuring that this element is of the desired type by calling {@link #isJson5Array()}
      * first.
      *
@@ -110,7 +110,7 @@ public abstract class Json5Element {
 
     /**
      * convenience method to get this element as a {@link Json5Primitive}. If the element is of some
-     * other type, a {@link IllegalStateException} will result. Hence it is best to use this method
+     * other type, a {@link IllegalStateException} will result. Hence, it is best to use this method
      * after ensuring that this element is of the desired type by calling {@link #isJson5Primitive()}
      * first.
      *
@@ -126,7 +126,7 @@ public abstract class Json5Element {
 
     /**
      * convenience method to get this element as a {@link Json5Null}. If the element is of some
-     * other type, a {@link IllegalStateException} will result. Hence it is best to use this method
+     * other type, a {@link IllegalStateException} will result. Hence, it is best to use this method
      * after ensuring that this element is of the desired type by calling {@link #isJson5Null()}
      * first.
      *

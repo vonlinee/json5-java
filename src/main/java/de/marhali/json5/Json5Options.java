@@ -61,6 +61,11 @@ public class Json5Options {
      */
     private final int indentFactor;
 
+    /**
+     * 是否保留注释文本
+     */
+    private boolean remainComment;
+
     public Json5Options(boolean allowInvalidSurrogates, boolean quoteSingle, boolean trailingComma, int indentFactor) {
         this.allowInvalidSurrogates = allowInvalidSurrogates;
         this.quoteSingle = quoteSingle;
@@ -82,5 +87,14 @@ public class Json5Options {
 
     public int getIndentFactor() {
         return indentFactor;
+    }
+
+    public boolean isCommentRemained() {
+        return remainComment;
+    }
+
+    public Json5Options remainComment(boolean remainComment) {
+        this.remainComment = remainComment;
+        return this;
     }
 }

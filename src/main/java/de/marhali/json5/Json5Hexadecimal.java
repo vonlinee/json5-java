@@ -35,15 +35,11 @@ public final class Json5Hexadecimal extends Json5Primitive {
      */
     public static BigInteger parseHexString(String hex) {
         Objects.requireNonNull(hex);
-
-        switch (hex.charAt(0)) {
-            case '+': // +0x...
-                return new BigInteger(hex.substring(3), 16);
-            case '-': // -0x...
-                return new BigInteger(hex.substring(3), 16).negate();
-            default: // 0x...
-                return new BigInteger(hex.substring(2), 16);
-        }
+        return switch (hex.charAt(0)) {
+            case '+' -> new BigInteger(hex.substring(3), 16); // +0x...
+            case '-' -> new BigInteger(hex.substring(3), 16).negate(); // -0x...
+            default -> new BigInteger(hex.substring(2), 16); // 0x...
+        };
     }
 
     /**
@@ -55,12 +51,10 @@ public final class Json5Hexadecimal extends Json5Primitive {
      */
     public static String serializeHexString(BigInteger bigInteger, boolean prefixPositive) {
         Objects.requireNonNull(bigInteger);
-
-        if(bigInteger.signum() >= 0) {
+        if (bigInteger.signum() >= 0) {
             return (prefixPositive ? "+0x" : "0x") + bigInteger.toString(16);
-        } else {
-            return "-0x" + bigInteger.abs().toString(16);
         }
+        return "-0x" + bigInteger.abs().toString(16);
     }
 
     /**

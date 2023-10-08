@@ -21,7 +21,6 @@ import de.marhali.json5.internal.LazilyParsedNumber;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Objects;
 
 /**
  * A class representing a Json primitive value. A primitive value
@@ -72,10 +71,13 @@ public abstract class Json5Primitive extends Json5Element {
         return new Json5String(value);
     }
 
+    /**
+     * the value, nullable
+     */
     protected final Object value;
 
     public Json5Primitive(Object value) {
-        this.value = Objects.requireNonNull(value);
+        this.value = value;
     }
 
     /**
@@ -103,7 +105,7 @@ public abstract class Json5Primitive extends Json5Element {
     @Override
     public boolean getAsBoolean() {
         if (isBoolean()) {
-            return ((Boolean) value).booleanValue();
+            return (Boolean) value;
         }
         // Check to see if the value as a String is "true" in any case.
         return Boolean.parseBoolean(getAsString());
@@ -284,8 +286,7 @@ public abstract class Json5Primitive extends Json5Element {
      * (Long, Integer, Short, Byte, BigInteger)
      */
     private static boolean isIntegral(Json5Primitive primitive) {
-        if (primitive.value instanceof Number) {
-            Number number = (Number) primitive.value;
+        if (primitive.value instanceof Number number) {
             return number instanceof BigInteger || number instanceof Long || number instanceof Integer
                     || number instanceof Short || number instanceof Byte;
         }
