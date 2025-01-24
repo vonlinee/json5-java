@@ -1,14 +1,17 @@
 {
-  "Code": 200,
-  "Msg": "成功",
-  "Data": [
-    {
-      name: "zs",
-      "failTRate": 0.1875,    //  this is single-line comment
-      "roomTNum": 64,    //  this is single-line comment
-      "useTRate": 1.968823,    //  this is single-line comment
-      "schoolId": "S-3333",    //  this is single-line comment
-      "roomUseCount": 3    //  this is single-line comment
-    }
-  ]
+  // comments
+  unquoted: 'and you can quote me on that',
+  singleQuotes: 'I can use "double quotes" here',
+  // inline comment
+  lineBreaks: "Look, Mom! \
+No \\n's!",
+  hexadecimal: 0xdecaf,
+  leadingDecimalPoint: .8675309,
+  andTrailing: 8675309.,
+  positiveSign: +1,
+  trailingComma: 'in objects',
+  andIn: [
+    'arrays',
+  ],
+  "backwardsCompatible": "with JSON",
 }

@@ -1,6 +1,6 @@
 package de.marhali.json5.stream;
 
-public class CommentCache {
+public class CommentText {
 
     StringBuilder textBuilder = new StringBuilder();
 

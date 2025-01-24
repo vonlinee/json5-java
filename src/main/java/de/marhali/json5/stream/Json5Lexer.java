@@ -110,7 +110,7 @@ public class Json5Lexer {
         this.options = Objects.requireNonNull(options);
 
         if (options.isCommentRemained()) {
-            this.commentCache = new CommentCache();
+            this.commentText = new CommentText();
         }
 
         eof = false;
@@ -228,24 +228,24 @@ public class Json5Lexer {
      *
      * @see Json5Options#isCommentRemained()
      */
-    private CommentCache commentCache;
+    private CommentText commentText;
 
     public void emptyComment() {
-        if (options.isCommentRemained() && commentCache != null) {
-            commentCache.clear();
+        if (options.isCommentRemained() && commentText != null) {
+            commentText.clear();
         }
     }
 
     public boolean hasComments() {
-        return commentCache != null && !commentCache.isEmpty();
+        return commentText != null && !commentText.isEmpty();
     }
 
-    public String getCurrentCommmentAsString() {
-        return commentCache.getText();
+    public String getCurrentCommentAsString() {
+        return commentText.getText();
     }
 
     /**
-     * 跳过单行注释文本
+     * skip single-line comment text
      */
     private void nextSingleLineComment() {
         while (true) {
@@ -253,9 +253,9 @@ public class Json5Lexer {
             if (isLineTerminator(n) || n == 0) {
                 return;
             }
-            // 保存当前单个单行注释块
-            if (options.isCommentRemained() && commentCache != null) {
-                commentCache.append(n);
+            // save the current single line comment block
+            if (options.isCommentRemained() && commentText != null) {
+                commentText.append(n);
             }
         }
     }

@@ -177,7 +177,7 @@ public final class Json5Parser {
 
     private static void consumeComment(Json5Object object, Json5Lexer lexer, String key) {
         if (lexer.hasComments()) {
-            object.addComment(key, lexer.getCurrentCommmentAsString());
+            object.addComment(key, lexer.getCurrentCommentAsString());
         }
         lexer.emptyComment();
     }

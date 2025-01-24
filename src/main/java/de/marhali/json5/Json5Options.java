@@ -62,14 +62,19 @@ public class Json5Options {
     private final int indentFactor;
 
     /**
-     * 是否保留注释文本
+     * Whether to keep the comment text when parse
      */
-    private boolean remainComment;
+    private final boolean remainComment;
 
     public Json5Options(boolean allowInvalidSurrogates, boolean quoteSingle, boolean trailingComma, int indentFactor) {
+        this(allowInvalidSurrogates, quoteSingle, trailingComma, indentFactor, false);
+    }
+
+    public Json5Options(boolean allowInvalidSurrogates, boolean quoteSingle, boolean trailingComma, int indentFactor, boolean remainComment) {
         this.allowInvalidSurrogates = allowInvalidSurrogates;
         this.quoteSingle = quoteSingle;
         this.trailingComma = trailingComma;
+        this.remainComment = remainComment;
         this.indentFactor = Math.max(0, indentFactor);
     }
 
@@ -91,10 +96,5 @@ public class Json5Options {
 
     public boolean isCommentRemained() {
         return remainComment;
-    }
-
-    public Json5Options remainComment(boolean remainComment) {
-        this.remainComment = remainComment;
-        return this;
     }
 }

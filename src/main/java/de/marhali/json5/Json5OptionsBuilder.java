@@ -27,17 +27,18 @@ public class Json5OptionsBuilder {
     private boolean allowInvalidSurrogates = false;
     private boolean quoteSingle = false;
     private boolean trailingComma = false;
-
+    private boolean remainComment = false;
     private int indentFactor = 0;
 
     /**
      * Constructs a new builder instance.
      */
-    public Json5OptionsBuilder() {}
+    public Json5OptionsBuilder() {
+    }
 
     /**
-     * @see Json5Options#isAllowInvalidSurrogates()
      * @return Current builder instance
+     * @see Json5Options#isAllowInvalidSurrogates()
      */
     public Json5OptionsBuilder allowInvalidSurrogate() {
         this.allowInvalidSurrogates = true;
@@ -45,8 +46,8 @@ public class Json5OptionsBuilder {
     }
 
     /**
-     * @see Json5Options#isQuoteSingle()
      * @return Current builder instance
+     * @see Json5Options#isQuoteSingle()
      */
     public Json5OptionsBuilder quoteSingle() {
         this.quoteSingle = true;
@@ -54,8 +55,17 @@ public class Json5OptionsBuilder {
     }
 
     /**
-     * @see Json5Options#isTrailingComma()
      * @return Current builder instance
+     * @see Json5Options#isCommentRemained()
+     */
+    public Json5OptionsBuilder remainComment() {
+        this.remainComment = true;
+        return this;
+    }
+
+    /**
+     * @return Current builder instance
+     * @see Json5Options#isTrailingComma()
      */
     public Json5OptionsBuilder trailingComma() {
         this.trailingComma = true;
@@ -67,9 +77,10 @@ public class Json5OptionsBuilder {
      * how many spaces ( {@code ' '}) should be placed before each key/value pair.
      * A factor of {@code < 1} disables pretty-printing and discards
      * any optional whitespace characters.
-     * @see Json5Options#getIndentFactor()
+     *
      * @param indentFactor Indent factor to apply
      * @return Current builder instance
+     * @see Json5Options#getIndentFactor()
      */
     public Json5OptionsBuilder indentFactor(int indentFactor) {
         this.indentFactor = indentFactor;
@@ -79,8 +90,9 @@ public class Json5OptionsBuilder {
     /**
      * Configures to output Json5 that fits in a page for pretty printing. This option only affects Json serialization.
      * Applies an indent factor of 2.
-     * @see #indentFactor(int)
+     *
      * @return Current builder instance
+     * @see #indentFactor(int)
      */
     public Json5OptionsBuilder prettyPrinting() {
         this.indentFactor = 2;
